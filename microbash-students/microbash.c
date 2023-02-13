@@ -174,7 +174,7 @@ command_t *parse_cmd(char * const cmdstr)
 				if(strlen(tmp) == 1 || !getenv(++tmp)) //ho solo $ oppure il valore puntato dopo non esiste
 					*tmp = '\0';
 				else
-					tmp = my_strdup(getenv(tmp+1)); //assegno a tmp il vero valore
+					tmp = my_strdup(getenv(tmp)); //assegno a tmp il vero valore
 				/*** TO BE DONE END ***/
 			}
 			result->args[result->n_args++] = my_strdup(tmp);
