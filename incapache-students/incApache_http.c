@@ -396,19 +396,12 @@ void manage_http_requests(int client_fd
                                  *** and store date in since_tm
                                  ***/
 /*** TO BE DONE 6.0 START ***/
-					/*
+					
 					if(strcmp(option_name, "If-Modified-Since") == 0){
 						http_method |= METHOD_CONDITIONAL;
 						option_val = strtok_r(strtokr_save, "\r\n", &strtokr_save); //continuo ad acquisirne informazioni
 						//storing date since 
 						strptime(option_val, " %a, %d %b %Y %H:%M:%S %Z", &since_tm); //da string a struct
-					}
-					*/
-					if(strcmp(option_name, "If-Modified-Since") == 0) {
-						http_method |= METHOD_CONDITIONAL;
-						option_val = strtok_r(strtokr_save, "\r\n", &strtokr_save);
-
-						strptime(option_val, " %a, %d %b %Y %H:%M:%S %Z", &since_tm);
 					}
 					
 
