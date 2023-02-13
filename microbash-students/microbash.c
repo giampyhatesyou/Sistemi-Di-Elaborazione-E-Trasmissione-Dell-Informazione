@@ -156,7 +156,7 @@ command_t *parse_cmd(char * const cmdstr)
 				fprintf(stderr, "Parsing error: no path specified for input redirection\n");
 				goto fail;
 			}
-			result->in_pathname = my_strdup(tmp+1);
+			result->in_pathname = my_strdup(tmp);
 		} else if (*tmp == '>') {
 			if (result->out_pathname) {
 				fprintf(stderr, "Parsing error: cannot have more than one output redirection\n");
