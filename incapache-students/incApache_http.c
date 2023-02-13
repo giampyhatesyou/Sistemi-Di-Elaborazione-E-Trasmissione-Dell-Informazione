@@ -109,7 +109,7 @@ void send_response(int client_fd, int response_code, int cookie,
 	/*** Compute date of servicing current HTTP Request using a variant of gmtime() ***/
 /*** TO BE DONE 6.0 START ***/
 	if (gmtime_r(&now_t, &now_tm) == NULL) //metto in now_tm now_t "scomposto"
-		fail_errno("Errore durante gmtime_r");
+		perror("Errore gmtime_r");
 /*** TO BE DONE 6.0 END ***/
 
 	strftime(time_as_string, MAX_TIME_STR, "%a, %d %b %Y %T GMT", &now_tm);
@@ -143,8 +143,8 @@ void send_response(int client_fd, int response_code, int cookie,
 			/*** compute file_size and file_modification_time ***/
 /*** TO BE DONE 6.0 START ***/
 	//stat_p struttura dove ho informazioni riguardanti il file, voglio creare una copia di alcune informazioni 
-	file_size = stat_p->st_size; 
-	file_modification_time = stat_p->st_mtime;
+			file_size = stat_p->st_size; 
+			file_modification_time = stat_p->st_mtime;
 
 /*** TO BE DONE 6.0 END ***/
 
@@ -172,10 +172,10 @@ void send_response(int client_fd, int response_code, int cookie,
 /*** TO BE DONE 6.0 START ***/
 	stat_p = &stat_buffer; 
 	if(stat(HTML_404, stat_p) != 0) //tento di clonare stat_p in HTML_404
-		fail_errno("Errore durante la stat");
+		perror("Errore durante stat");
 	
-	mime_type = get_mime_type(HTML_404);
 	file_size = stat_p->st_size;
+	mime_type = get_mime_type(HTML_404);
 	file_modification_time = stat_p->st_mtime;
 /*** TO BE DONE 6.0 END ***/
 
@@ -197,10 +197,10 @@ void send_response(int client_fd, int response_code, int cookie,
 /*** TO BE DONE 6.0 START ***/
 	stat_p = &stat_buffer; 
 	if(stat(HTML_501, stat_p) != 0) //tento di clonare stat_p in HTML_501
-		fail_errno("Errore durante la stat");
+		perror("Errore durante la stat");
 	
-	mime_type = get_mime_type(HTML_501);
 	file_size = stat_p->st_size;
+	mime_type = get_mime_type(HTML_501);
 	file_modification_time = stat_p->st_mtime;
 
 /*** TO BE DONE 6.0 END ***/
@@ -213,8 +213,8 @@ void send_response(int client_fd, int response_code, int cookie,
         if ( cookie >= 0 ) {
             /*** set permanent cookie in order to identify this client ***/
 /*** TO BE DONE 6.0 START ***/
-	strcat(http_header, "\r\nSet-cookie: "); //concateno header con la stringa. \r = fine header
-	snprintf(http_header + strlen(http_header), sizeof(http_header)-strlen(http_header), "%d", cookie); //scrivo nel buffer il contenuto di cookie
+		strcat(http_header, "\r\nSet-cookie: "); //concateno header con la stringa. \r = fine header
+		snprintf(http_header + strlen(http_header), sizeof(http_header)-strlen(http_header), "%d", cookie); //scrivo nel buffer il contenuto di cookie
 
 /*** TO BE DONE 6.0 END ***/
 
@@ -234,8 +234,8 @@ void send_response(int client_fd, int response_code, int cookie,
 		     see gmtime and strftime ***/
 /*** TO BE DONE 6.0 START ***/
 	if (gmtime_r(&file_modification_time, &file_modification_tm) == NULL)
-		fail_errno("Errore gmtime_r");
-		strftime(time_as_string, MAX_TIME_STR, "%a, %d %b %Y %T GMT", &file_modification_tm); //converto time to string
+		perror("Errore gmtime_r");
+	strftime(time_as_string, MAX_TIME_STR, "%a, %d %b %Y %H:%M:%S %Z", &file_modification_tm); //converto time to string
 
 /*** TO BE DONE 6.0 END ***/
 
@@ -278,10 +278,11 @@ void send_response(int client_fd, int response_code, int cookie,
 			fail_errno("Sendfile non andata a buon fine\n");
 		}
 		c++;
-	}
-		//richiamo sendfile
+	} //richiamo sendfile
+
 	if(close(fd) == -1)
 		fail_errno("Errore durante la close");
+		
 
 /*** TO BE DONE 6.0 END ***/
 
@@ -395,20 +396,21 @@ void manage_http_requests(int client_fd
                                  *** and store date in since_tm
                                  ***/
 /*** TO BE DONE 6.0 START ***/
-/*
-					if(strcmp(option_name, "if-Modified-Since") == 0){
+					/*
+					if(strcmp(option_name, "If-Modified-Since") == 0){
 						http_method |= METHOD_CONDITIONAL;
 						option_val = strtok_r(strtokr_save, "\r\n", &strtokr_save); //continuo ad acquisirne informazioni
 						//storing date since 
 						strptime(option_val, " %a, %d %b %Y %H:%M:%S %Z", &since_tm); //da string a struct
-					}*/
-					if (strcmp(option_name, "If-Modified-Since") == 0)
-					{
-						// strftime(strtokr_save, MAX_TIME_STR, "%a, %d %b %Y %T GMT", &since_tm);
-						strptime(strtokr_save, "%a, %d %b %Y %T GMT", &since_tm);
-						http_method = METHOD_CONDITIONAL;
 					}
+					*/
+					if(strcmp(option_name, "If-Modified-Since") == 0) {
+						http_method |= METHOD_CONDITIONAL;
+						option_val = strtok_r(strtokr_save, "\r\n", &strtokr_save);
 
+						strptime(option_val, " %a, %d %b %Y %H:%M:%S %Z", &since_tm);
+					}
+					
 
 /*** TO BE DONE 6.0 END ***/
 
@@ -465,15 +467,13 @@ void manage_http_requests(int client_fd
 				 ***/
 /*** TO BE DONE 6.0 START ***/
 				// devo confrontare stat_p->st_mtim con since_tm
-				//MODO GIAMPY
-				/*if(difftime(my_timegm(&since_tm), stat_p->st_mtime) > 0.0){ //guardo differenze 
+				if(difftime(my_timegm(&since_tm), stat_p->st_mtime) > 0){ //guardo differenze 
 					http_method = METHOD_NOT_CHANGED;
 				}
 				else{
 					http_method -= METHOD_CONDITIONAL; //tolgo il flag di contional(?)
-				}*/
-				if ((int)my_timegm(&since_tm) > (int)stat_p->st_mtime)
-					http_method = METHOD_NOT_CHANGED;
+				}
+
 /*** TO BE DONE 6.0 END ***/
 
 			}
